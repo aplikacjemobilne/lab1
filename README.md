@@ -190,14 +190,15 @@ Jak pewnie się już domyślasz, po zadeklarowaniu migracji, należy ją przepro
 
 - `rails db:migrate`
 
-Uzupełniamy model o relacje wiele do wielu. Pamiętamy o wskazaniu `join_table`.
+Tworzenie relacji w aplikacjach RoR jest dwupoziomowe. Poza odpowiednim przygotowaniem bazy danych, same klasy modelu muszą zostać uzupełnione o informacje o oczekiwanej relacji. Odwiedź więc plik modelu Studenta (`app/models/Student.rb`) i poinformuj go o relacji wiele do wielu z kursami. Pamiętaj o wskazaniu `join_table`.
 
 ```ruby
 class Student < ApplicationRecord
   has_and_belongs_to_many :courses, :join_table => :students_courses
 end
 ```
-To samo w kursie.
+
+Analogicznie uzupełnij model kursu.
 
 Aktualizujemy graf.
 - `rake erd`

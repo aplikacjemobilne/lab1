@@ -131,13 +131,13 @@ end
 
 Jak widzisz, powyższy kod tworzy nową tabelę, o nazwie `students`, a w niej pola `index` oraz `name`. Dodatkowo, w standardzie dodawane są do niej również stemple czasowe, dla daty utworzenia i daty ostatniej modyfikacji zasobu. Przeprowadź więc migrację.
 
-- `rake db:migrate`
+- `rails db:migrate`
 
 Po ponownym odwiedzeniu aplikacji wszystko powinno być już jak należy.
 
 Kilka kroków wcześniej dodaliśmy do aplikacji gem `rails-erd`. Pozwala on (pod warunkiem, że w systemie operacyjnym zainstalowany został program [Graphviz](http://www.graphviz.org)) na budowanie graficznego schematu zależności pomiędzy modelami zapisywanymi w bazie danych. Schemat budujemy komendą.
 
-- `rake erd`
+- `rails erd`
 
 Wynik zapisuje się w pliku `erd.pdf`. Na tę chwilę model jest prymitywny i opisuje jedynie jeden zasób.
 
@@ -160,8 +160,8 @@ Zanim jednak zatroszczymy się o odpowiednie zabezpieczenie bazy danych przed w
 
 Nie możemy zapomnieć o migracji i aktualizacji schematu.
 
-- `rake db:migrate`
-- `rake erd`
+- `rails db:migrate`
+- `rails erd`
 
 ![](images/two_model.png)
 
@@ -201,7 +201,7 @@ end
 Analogicznie uzupełnij model kursu.
 
 Aktualizujemy graf.
-- `rake erd`
+- `rails erd`
 
 Dodajemy brakujące modele. Tu już są wskazania wiele do jednego.
 
@@ -209,7 +209,7 @@ Dodajemy brakujące modele. Tu już są wskazania wiele do jednego.
 - `rails generate scaffold Post body:string student:references topic:references`
 
 Migrujemy
-- `rake db:migrate`
+- `rails db:migrate`
 
 Uzupełniamy relacje.
 
@@ -247,6 +247,8 @@ Budujemy schemat.
 Mamy gotowy model danych!
 
 ![](images/model.png)
+
+---
 
 ## Jest aplikacja webowa.
 Otwórzmy routes.

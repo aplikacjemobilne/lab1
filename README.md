@@ -104,55 +104,76 @@ Samo dodanie wymagania nie oznacza oczywiście jeszcze zainstalowania modułu. A
 
 *Wskazówka: Po instalacji nowych gemów, zawsze warto uruchomić ponownie serwer. Aby go wyłączyć używamy kombinacji klawiszy `Ctrl`+`C`.*
 
-Tworzymy model Studenta
+Teraz możemy przystąpić do tworzenia naszego modelu. W pierwszym kroku, korzystając z techniki nazywanej *scaffoldingiem*, utworzymy model Studenta, który będzie posiadać dwa pola tekstowe. Imię, czy też nazwę użytkownika w parametrze `name` oraz numer indeksu w parametrze `index.`
 
 - `rails generate scaffold Student index:string name:string`
 
-Odwiedzamy aplikację. Błąd.
+Odwiedźmy teraz aplikację. Po pierwszej zmianie w modelu, na ekranie pojawia się błąd.
 
-Odwiedzamy migrację. Sama się utworzyła.
+![](images/no_migration.png)
 
-Przeprowadzamy migrację.
+Serwer informuje nas o tym, że błąd polega na nieprzeprowadzonej migracji. Zarządzanie schematem bazy danych w wypadku aplikacji RoR polega na odtwarzaniu go na podstawie kolejnych zmian wprowadzanych przez programistę. Zmiany takie nazywamy migracjami.
+
+Kiedy korzystamy ze *scaffoldingu*, migracje tworzą się samodzielnie. Odnajdź pierwszą, odpowiedzialną za stworzenie modelu Studenta, w katalogu `db/migrate`.
+
+```ruby
+class CreateStudents < ActiveRecord::Migration[5.1]
+  def change
+    create_table :students do |t|
+      t.string :index
+      t.string :name
+
+      t.timestamps
+    end
+  end
+end
+```
+
+Jak widzisz, powyższy kod tworzy nową tabelę, o nazwie `students`, a w niej pola `index` oraz `name`. Dodatkowo, w standardzie dodawane są do niej również stemple czasowe, dla daty utworzenia i daty ostatniej modyfikacji zasobu. Przeprowadź więc migrację.
 
 - `rake db:migrate`
 
-Odwiedzamy ponownie aplikację.
+Po ponownym odwiedzeniu aplikacji wszystko powinno być już jak należy.
 
-Budujemy schemat.
+Kilka kroków wcześniej dodaliśmy do aplikacji gem `rails-erd`. Pozwala on (pod warunkiem, że w systemie operacyjnym zainstalowany został program [Graphviz](http://www.graphviz.org)) na budowanie graficznego schematu zależności pomiędzy modelami zapisywanymi w bazie danych. Schemat budujemy komendą.
+
 - `rake erd`
 
-Otwieramy `erd.pdf`.
+Wynik zapisuje się w pliku `erd.pdf`. Na tę chwilę model jest prymitywny i opisuje jedynie jeden zasób.
 
-Obok serwera odpalamy konsolę w trybie piaskownicy.
+![](images/pre_model.png)
+
+Skoro jednak mamy już ten zasób, nauczmy się z niego korzystać. Obok serwera www, do naszej aplikacji możemy dostać się także z poziomu konsoli/interpretera. Uruchamiając ją w trybie piaskownicy, mamy pewność, że żadne z wykonanych przez nas modyfikacji danych nie zapiszą się w bazie na stałe.
 
 - `rails console --sandbox`
 
-Dodajemy pustego użytkownika. Udaje się
+Spróbujmy utworzyć nowego, pustego użytkownika.
 - `Student.create()`
 
-Dodajemy wypełnionego użytkownika.
+Niepokojące jest to, że udało się nam utworzyć pusty wpis w bazie. Ale spokojnie, zajmiemy się tym później. Sprawdźmy jeszcze, czy potrafimy dodać wypełnionego użytkownika.
+
 - `Student.create(index: 171039, name: 'Zenek')`
 
-Też się udaje.
-
-Tworzymy model dla kursu.
+Zanim jednak zatroszczymy się o odpowiednie zabezpieczenie bazy danych przed wypełnianiem jej kompletnymi głupotami, zajmijmy się uzupełnieniem jej schematu. Najpierw wygenerujmy rusztowanie dla kursu.
 
 - `rails generate scaffold Course name:string code:string description:string`
 
-Migracja.
+Nie możemy zapomnieć o migracji i aktualizacji schematu.
 
 - `rake db:migrate`
-
-Aktualizujemy schemat.
 - `rake erd`
 
-Relacja wiele do wielu jest potrzebna. Ta jest najtrudniejsza, bo potrzebuje tablic asocjacyjnych, więc od niej zaczniemy.
+![](images/two_model.png)
 
-Tworzymy migrację.
+Nasz schemat składa się już z dwóch klas/tabel. Nie są one jednak połączone. System zakłada, że w systemie mamy wiele kursów i wielu studentów. Każdy student może zapisać się do wielu kursów, a w konsekwencji na każdy kurs zapisanych jest wielu studentów. Potrzebujemy więc zatroszczyć się o relację wiele do wielu.
+
+Jak z pewnością zdajesz sobie sprawę po pomyślnym zakończeniu kursu *Bazy Danych*, relację wiele do wielu w bazach relacyjnych rozwiązuje się przy użyciu *tablic asocjacyjnych*. Jeśli nie wiesz, czym jest *tablica asocjacyjna*, szybko kogoś zapytaj. Ale po cichu, bo to odrobinę wstydliwe.
+
+Migracje bazy danych można utworzyć również ręcznie. Skorzystajmy z generatora, który stworzy nam pustą migrację tworzącą tabelę asocjacyjną `students_courses`.
 
 - `rails generate migration CreateStudentsCourses`
 
-Odwiedzamy migracje. Poprawiamy, aby stworzyć tablicę asocjacyjną.
+Odnajdź migrację w projekcie. Musimy ją odrobinę zmodyfikować. Po pierwsze, wpisy w tablicy asocjacyjnej nie potrzebują przesadnie własnego indeksu, więc wyłączamy jego generowanie, negując ustawiając pole `id`. Dodajmy za to dwie kolumny, odpowiedzialne za nawiązanie kolejno do tablicy `students` i `course`.
 
 ```ruby
 class CreateStudentsAndCourses < ActiveRecord::Migration[5.1]
@@ -164,6 +185,8 @@ class CreateStudentsAndCourses < ActiveRecord::Migration[5.1]
   end
 end
 ```
+
+Jak pewnie się już domyślasz, po zadeklarowaniu migracji, należy ją przeprowadzić.
 
 - `rails db:migrate`
 

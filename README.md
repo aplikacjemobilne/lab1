@@ -1,4 +1,5 @@
 # Aplikacje Mobilne — Laboratorium pierwsze
+
 W dzisiejszym, wstępnym raczej, laboratorium, zmierzą się Państwo z tutorialem, którego pozytywne zakończenie poskutkuje stworzeniem prostego serwisu internetowego. Będzie to uproszczone, studenckie forum, w którym po rejestracji i zalogowaniu, studenci będą mogli zapisywać się do kursów, którymi są zainteresowani, w kursach zakładać tematy, a do tematów tworzyć odpowiedzi.
 
 W instrukcji stosowane będą poniższe konwencje:
@@ -12,6 +13,9 @@ W instrukcji stosowane będą poniższe konwencje:
 puts 'Fragmenty kodu wyglądać będą tak jak ten'
 ```
 
+---
+
+# Część 1
 ## Tworzymy nową aplikację Ruby on Rails
 
 Aby rozpocząć pracę, musimy dysponować środowiskiem programistycznym wyposażonym w:
@@ -249,35 +253,106 @@ Mamy gotowy model danych!
 ![](images/model.png)
 
 ---
+# Część 2
 
 ## Jest aplikacja webowa.
-Otwórzmy routes.
 
-- `rake routes`
+W poprzedniej części laboratorium udało nam się zaprojektować model danych, zawierający wszystkie obecne w nim klasy oraz zachodzące pomiędzy nimi relacje.
 
-Przeklikajmy i utwórzmy dwóch studentów, kurs, temat i post.
+- sklonuj repozytorium ze swoim kodem (`git clone ŚCIEŻKA_DO_REPOZYTORIUM`),
+- zainstaluj potrzebne **gemy** (`bundle install --path vendor/bundle`),
+- dokonaj migracji bazy danych (`rails db:migrate`)
+- uruchom serwer (`rails server`)
 
-Aby utworzyć temat, należy podać id istniejącego studenta i kursu.
-Aby utworzyć post, należy podać id istniejącego studenta i tematu.
+W wypadku aplikacji rails, jeśli korzystamy z tzw. rusztowań (`scaffolds`), razem z modelem danych tworzony jest interfejs programistyczny w architekturze REST. Opowiemy o nim więcej podczas zajęć opisujących protokół HTTP. Na tę chwilę musi wystarczyć nam informacja, że możemy wyświetlić sobie wszystkie ścieżki (`URL`) dostępne dla klienta naszej aplikacji. Aby je wyświetlić, wystarczy uruchomić zadanie `routes`.
 
-Zróbmy sobie główny widok do podglądu.
+- `rails routes`
 
-Najpierw stwórzmy statyczny kontroler.
+Na tę chwilę wynikiem wykonania komendy `rails routes` powinien być  poniższy ekran.
 
-- `rails generate controller static`
+```ruby
+Prefix       Verb   URI Pattern                  Controller#Action
+posts        GET    /posts(.:format)             posts#index
+             POST   /posts(.:format)             posts#create
+new_post     GET    /posts/new(.:format)         posts#new
+edit_post    GET    /posts/:id/edit(.:format)    posts#edit
+post         GET    /posts/:id(.:format)         posts#show
+             PATCH  /posts/:id(.:format)         posts#update
+             PUT    /posts/:id(.:format)         posts#update
+             DELETE /posts/:id(.:format)         posts#destroy
+topics       GET    /topics(.:format)            topics#index
+             POST   /topics(.:format)            topics#create
+new_topic    GET    /topics/new(.:format)        topics#new
+edit_topic   GET    /topics/:id/edit(.:format)   topics#edit
+topic        GET    /topics/:id(.:format)        topics#show
+             PATCH  /topics/:id(.:format)        topics#update
+             PUT    /topics/:id(.:format)        topics#update
+             DELETE /topics/:id(.:format)        topics#destroy
+courses      GET    /courses(.:format)           courses#index
+             POST   /courses(.:format)           courses#create
+new_course   GET    /courses/new(.:format)       courses#new
+edit_course  GET    /courses/:id/edit(.:format)  courses#edit
+course       GET    /courses/:id(.:format)       courses#show
+             PATCH  /courses/:id(.:format)       courses#update
+             PUT    /courses/:id(.:format)       courses#update
+             DELETE /courses/:id(.:format)       courses#destroy
+students     GET    /students(.:format)          students#index
+             POST   /students(.:format)          students#create
+new_student  GET    /students/new(.:format)      students#new
+edit_student GET    /students/:id/edit(.:format) students#edit
+student      GET    /students/:id(.:format)      students#show
+             PATCH  /students/:id(.:format)      students#update
+             PUT    /students/:id(.:format)      students#update
+             DELETE /students/:id(.:format)      students#destroy
+```
 
-Dodajmy wpis do routes
+Są to wszystkie możliwe schematy zapytań, które możemy wysłać do naszej aplikacji. Ponadto, wchodząd pod adres [http://localhost:4000/students](http://localhost:4000/students), możemy zaobserwować gotowy interfejs webowy do obsługi zasobu studenta.
+
+![](images/webservice_students.png)
+
+Spróbój, przeklikując ten interfejs utworzyć dwóch w bazie danych dwóch studentów. Utwórz również dwa kursy ([http://localhost:4000/courses](http://localhost:4000/courses)), dwa tematy ([http://localhost:4000/topics](http://localhost:4000/topics)) i dwa posty ([http://localhost:4000/posts](http://localhost:4000/posts)).
+
+**Pamiętaj, że**:
+- Aby utworzyć temat, należy podać identyfikator istniejącego studenta i kursu.
+- Aby utworzyć post, należy podać identyfikator istniejącego studenta i tematu.
+
+Poza kontrolerami tworzonymi domyślnie przy `scaffoldingu`, możemy oczywiście programować też własne. Spróbujmy więc zrobić to dla obsługi głównej strony naszego serwisu ([http://localhost:3000](http://localhost:3000)), aby nareszcie zniknęły z niej radośni ludzie i zwierzęta stojący na wycinku kuli ziemskiej.
+
+
+Rozpoczniemy od dodania wpisu do pliku `routes.rb`, który przechowuje wszystkie zdefiniowane przez nas ścieżki. W dowolnym jego miejscu utwórzmy wpis wskazujący na domyślną ścieżkę `root`, opisującą stronę główną, która będzie informować aplikację, że ma wykonywać akcję `index`, należącą do kontrolera `root`.
+
 ```ruby
 root to: 'static#index'`
 ```
 
-Oraz akcję w kontrolerze.
+Po odwierdzeniu strony głównej zobaczymy błąd. Jest to oczywiście błąd na który liczymy, bo po prawdzie programowanie w *RoR* w głównej mierze polega na umiejętności odczytywania komunikatów błędu.
 
-Utwórzmy też widok `app/views/static/index.html.erb`.
+![](images/webservice_e1.png)
 
-Teraz działa.
+Z aktualnego wynika, zgodnie z prawdą, że w projekcie nie istnieje jeszcze kontroler `static`. Nie pozostaje więc nam nic innego, niż utworzenie go, używając generatora kontrolerów:
 
-Wypełnijmy go treścią.
+- `rails generate controller static`
+
+Po przetworzeniu tej komendy, wśród kontrolerów (`app/controllers`), pojawi się ten, którego potrzebujemy (`static_controller.rb`). Po odwiedzeniu strony, uzyskamy też nowy błąd.
+
+![](images/webservice_e2.png)
+
+Mówi on o tym, że w istniejącym już kontolerze, który został wskazany przez plik routingu, nie znajduje się akcja `index`. Będzie to oczywistą prawdą. Zaspokójmy więc oczekiwania serwera i uzupełnijmy plik kontrolera (`app/controllers/static_controller.rb`) o taką akcję. Początkowo będzie ona pusta.
+
+
+```ruby
+class StaticController < ApplicationController
+  def index
+
+  end
+end
+```
+
+Uzyskamy trzeci, ostatni już błąd.
+
+![](images/webservice_e3.png)
+
+Mówi on nam o tym, że dla istniejącej akcji (`index`), istniejącego kontrolera (`static_controller`), nie istnieje żaden widok. Dokonajmy więc ostatni krok niezbędny dla wyeliminowania błędów i stwórzmy plik `app/views/static/index.html.erb`, wypełniając go prostą, generyczną treścią. Przykładowo:
 
 ```html
 <h1>Strona główna</h1>
@@ -291,13 +366,27 @@ non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 </p>
 ```
 
-Dodajmy treść dynamiczną.
+Po odwiedzeniu strony po raz kolejny, nareszcie spotkamy się z sukcesem.
 
-```erb
+![](images/webservice_success.png)
+
+Pliki widoków, posiadające rozszerzenie `.html.erb` pozwalają, poza klasycznymi znacznikami HTML, dodawać wstawki kodu. Istnieją ich dwa rodzaje:
+
+- Domknięte klamrami `<%` oraz `%>` — które jedynie wykonują zawarty w nich kod Ruby,
+- Domknięte klamrami `<%=` oraz `%>` — które wykonują zawarty w nich kod i wyświetlają jego wynik.
+
+Korzystając z drugiego rodzaju wstawki, uzupełnijmy kod strony głównej o poniższą linijkę:
+
+```html
 <%= Time.now %>
 ```
 
-Dodajmy zmienną w kontrolerze.
+Na naszej stronie głównej wyświetli się aktualny czas.
+
+![](images/webservice_time.png)
+
+Złym podejściem jest jednak pisanie dłuższych fragmentów kodu bezpośrednio w widoku. Odpowiednim miejscem na logikę aplikacji są metody naszych kontrolerów, a widoki mają za zadanie jedynie wyświetlać przygotowane w kontrolerach informacje. Uzupełnijmy więc metodę `index` kontrolera `StaticController` o minimum kodu. Przykładowo, deklarację zmiennej.
+
 
 ```ruby
 class StaticController < ApplicationController
@@ -307,13 +396,18 @@ class StaticController < ApplicationController
 end
 ```
 
-I wczytajmy z widoku. Widać, że wszystko dostępne.
+Teraz możemy wczytać ją w widoku.
 
 ```html
-<%= @some_variable %>
+<h1><%= @some_variable %></h1>
 ```
 
-Pobierzmy wszystkie dane do wyświetlenia.
+Jak widać, zdefiniowane w akcji kontrolera zmienne są dostępne z poziomu jego widoku.
+
+![](images/webservice_variable.png)
+
+Rozwińmy odrobinę przykład, korzystając w naszym kontrolerze ze zdefiniowanych w pierwszej części laboratorium modeli. Do zmiennej `@students` pobierzemy wszystkie dostępne w bazie danych obiekty studentów, a do zmiennej `@courses`, informacje o wszystkich kursach.
+
 ```ruby
 def index
   @students = Student.all
@@ -321,13 +415,15 @@ def index
 end
 ```
 
-Wyświetlmy.
+Spróbujmy wyświetlić nasz zbiór studentów.
 
 ```html
 <%= @students %>
 ```
 
-O. Relacja. A może tak ciała?
+![](images/webservice_active_record.png)
+
+Nie jest to do końca to, czego mogliśmy się spodziewać. W zmiennej `@students` nie znajduje się tablica ze wszystkimi studentami, a tak zwana relacja *ActiveRecord*. Pozwala ona na wygodne iterowanie wszystkich elementów w bazie, na które wskazuje, pobierając jedynie te informacje, których nam potrzeba i dopiero wtedy, kiedy będą nam potrzebne.
 
 ```html
 <ul>
@@ -337,7 +433,9 @@ O. Relacja. A może tak ciała?
 </ul>
 ```
 
-A może tak konkretne pola?
+![](images/webservice_student_list.png)
+
+Otrzymaliśmy listę studentów, gdzie lokalna zmienna `student` wskazuje na każdy kolejny obiekt z bazy. Rozbudujmy ją tak, aby pokazywać nazwę i indeks studenta.
 
 ```html
 <ul>
@@ -347,7 +445,9 @@ A może tak konkretne pola?
 </ul>
 ```
 
-I jeszcze link.
+![](images/webservice_without_links.png)
+
+Na podobnej zasadzie, korzystając z funkcji `link_to` możemy dodać łącze do widoku studenta.
 
 ```html
 <ul>
@@ -359,27 +459,13 @@ I jeszcze link.
 </ul>
 ```
 
-Wyśmienicie. No to wyświetlmy wszystkie dane.
-
-> **Zadanie**: w pętlach wyświetl wszystkie informacje o postach. Zagnieżdżając kursy, tematy i posty, wyświetlając informacje o autorze.
-
-```html
-<h2>Wszystkie posty</h2>
-<% @courses.each do |course| %>
-  <h3><%= course.name %></h3>
-  <% course.topics.each do |topic| %>
-    <h4><%= topic.title %> by <%= topic.student.name %></h4>
-    <% topic.posts.each do |post| %>
-      <p>
-        <%= post.body %>
-      </p>
-      <h6>by <%= post.student.name %></h6>
-    <% end %>
-  <% end %>
-<% end %>
-```
-
 Umiemy operować na widokach!
+
+> **Zadanie**: W widoku głównym, wyświetl wszystkie informacje o studentach. Pokaż też wszystkie pozostałe dane zawarte w bazie, zagnieżdżając w pętlach kursy, tematy i posty, pamiętając, aby wyświetlać również informacje o autorze.
+
+---
+
+# Część 3
 
 ## Zabezpieczenie użytkowników hasłem
 Próbujemy utworzyć pustego użytkownika. Da się. Niedobrze.

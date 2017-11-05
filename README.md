@@ -539,6 +539,8 @@ Teraz przeszło tylko hasło jest za proste. Dodanie kolumny `password_digest` p
 validates :password, presence: true, length: { minimum: 6 }
 ```
 
+# Część 4
+
 ## Logowanie w aplikacji webowej
 Indeksujemy indeks.
 
